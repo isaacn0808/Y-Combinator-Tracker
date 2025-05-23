@@ -1,0 +1,67 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'yarn'
+
+    - name: Install Frontend Dependencies
+      run: |
+        cd client
+        yarn install
+      
+    - name: Install Backend Dependencies
+      run: |
+        cd server
+        yarn install
+
+    - name: Type Check Frontend
+      run: |
+        cd client
+        yarn tsc --noEmit
+        
+    - name: Type Check Backend
+      run: |
+        cd server
+        yarn tsc --noEmit
+
+    - name: Lint Frontend
+      run: |
+        cd client
+        yarn lint
+        
+    - name: Lint Backend
+      run: |
+        cd server
+        yarn lint
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Repository Dispatch
+      uses: peter-evans/repository-dispatch@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        event-type: deploy
+        client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'

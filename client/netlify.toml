@@ -1,0 +1,10 @@
+[build]
+  command = "yarn build"
+  publish = ".next"
+
+[build.environment]
+  NEXT_PUBLIC_API_URL = "https://api.yc-tracker.com"  # This will be updated with actual backend URL
+  NEXT_TELEMETRY_DISABLED = "1"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

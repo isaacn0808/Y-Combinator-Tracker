@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+credentials/
+*.json.key
+logs/
+*.log
+postgresql_installer.exe
+db_backup.dump
+
+# Lock files
+package-lock.json
+yarn.lock
+
+# Generated files
+company_page.html

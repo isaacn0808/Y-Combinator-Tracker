@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Founder {
+  id        String  @id @default(cuid())
+  name      String
+  companyId String
+  bio       String?
+  linkedin  String?
+  title     String?
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+}
+
+model Company {
+  id                 String               @id @default(cuid())
+  name               String               @unique
+  website            String?
+  ycBatch            String
+  description        String?
+  status             CompanyStatus        @default(NEW)
+  foundedDate        DateTime
+  notes              String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  businessModel      String
+  lastMeetingDate    DateTime?
+  logo               String?
+  metWith            Boolean              @default(false)
+  oneLiner           String
+  funding_raised     String?
+  funding_runway     String?
+  funding_stage      String?
+  funding_valuation  String?
+  metrics_burnRate   String?
+  metrics_growthRate String?
+  metrics_revenue    String?
+  metrics_userCount  String?
+  developmentStage   DevelopmentStageVal?
+  productStatus      ProductStatusVal?
+  sectors            String[]
+  evaluations        Evaluation[]
+  founders           Founder[]
+  interactions       Interaction[]
+  metrics            Metric[]
+  processedEmails    ProcessedEmail[]
+  updateLogs         UpdateLog[]
+}
+
+model Metric {
+  id           String     @id @default(cuid())
+  companyId    String
+  name         MetricName
+  value        Float
+  valueString  String?
+  dateRecorded DateTime
+  source       String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  company      Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, name])
+  @@index([dateRecorded])
+}
+
+model Interaction {
+  id             String          @id @default(cuid())
+  companyId      String
+  type           InteractionType
+  date           DateTime
+  summary        String
+  notes          String?
+  participants   String[]
+  followUpNeeded Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  company        Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model Evaluation {
+  id                       String   @id @default(cuid())
+  companyId                String
+  evaluationDate           DateTime
+  evaluator                String?
+  overallNotes             String?
+  problemScore             Int?
+  solutionScore            Int?
+  teamScore                Int?
+  marketScore              Int?
+  businessModelScore       Int?
+  tractionScore            Int?
+  competitionScore         Int?
+  differentiationScore     Int?
+  investmentPotentialScore Int?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  businessModelNotes       String?
+  competitionNotes         String?
+  differentiationNotes     String?
+  investmentPotentialNotes String?
+  marketNotes              String?
+  problemNotes             String?
+  solutionNotes            String?
+  teamNotes                String?
+  tractionNotes            String?
+  company                  Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, evaluationDate])
+}
+
+model UpdateLog {
+  id        String   @id @default(cuid())
+  companyId String
+  timestamp DateTime @default(now())
+  fieldName String
+  oldValue  String?
+  newValue  String?
+  source    String?
+  userId    String?
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model ProcessedEmail {
+  id             String    @id @default(cuid())
+  messageId      String    @unique
+  subject        String
+  sender         String
+  receivedAt     DateTime
+  content        String
+  processed      Boolean   @default(false)
+  companyId      String?
+  analysisResult String?
+  analysisDate   DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  company        Company?  @relation(fields: [companyId], references: [id])
+
+  @@index([processed])
+  @@index([companyId])
+}
+
+enum CompanyStatus {
+  WATCHING
+  ENGAGED
+  INVESTED
+  PASSED
+  NEW
+  ACTIVE
+  ACQUIRED
+  INACTIVE
+  CLOSED
+  STEALTH
+  UNKNOWN  @map("legacy_unknown")
+}
+
+enum InteractionType {
+  EMAIL
+  MEETING
+  CALL
+  DEMO
+  YC_APPLICATION_REVIEW
+  GENERAL_NOTE
+  OTHER
+}
+
+enum MetricName {
+  MRR
+  ARR
+  USER_COUNT
+  CUSTOMER_COUNT
+  GROWTH_RATE_MOM
+  GROWTH_RATE_WOW
+  BURN_RATE
+  RUNWAY
+  FUNDING_TOTAL
+  VALUATION
+  OTHER
+}
+
+enum EvaluationCategory {
+  PROBLEM
+  SOLUTION
+  TEAM
+  MARKET_SIZE
+  BUSINESS_MODEL
+  TRACTION
+  COMPETITION
+  DIFFERENTIATION
+  INVESTMENT_POTENTIAL
+}
+
+enum ProductStatusVal {
+  PRE_LAUNCH @map("pre-launch")
+  BETA
+  LIVE
+}
+
+enum DevelopmentStageVal {
+  IDEA   @map("idea")
+  MVP    @map("mvp")
+  PMF    @map("pmf")
+  GROWTH @map("growth")
+  SCALE  @map("scale")
+}
