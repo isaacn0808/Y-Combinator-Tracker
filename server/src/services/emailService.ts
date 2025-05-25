@@ -764,8 +764,12 @@ export const processAnalyzedEmail = async (emailId: string, analysisResult: Emai
         const interactionDate = interaction.date || new Date();
         
         // Prepare interaction data, omitting null/undefined values
-        const interactionData: Record<string, any> = {
-          companyId,
+        const interactionData: Prisma.InteractionCreateInput = {
+          company: {
+            connect: {
+              id: companyId
+            }
+          },
           type: interactionType as any, // Cast to enum type
           date: interactionDate,
           summary: interaction.summary || 'Email interaction',
