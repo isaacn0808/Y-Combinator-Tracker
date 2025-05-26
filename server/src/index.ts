@@ -23,7 +23,9 @@ app.use(cors());
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello from YC Tracker Backend (Express)!');
+  res.status(200).json({ status: 'healthy' });
 });
+
 
 
 app.use('/api/companies', companyRoutes);
