@@ -26,6 +26,7 @@ app.get('/', (req: Request, res: Response) => {
   res.status(200).json({ status: 'healthy' });
 });
 
+app.get('/health', (req, res) => {res.status(200).json({ status: 'healthy' })});
 
 
 app.use('/api/companies', companyRoutes);
