@@ -3,21 +3,24 @@ import { Company } from '@/types';
 import CompanyDetailClient from './client-page';
 
 type Props = {
-  params: { id: string };
-  searchParams?: Record<string, string | string[] | undefined>;
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>; // Changed to Promise
 };
 
 // Set this page to be dynamically rendered
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const resolvedParams = await params; // Added await
   return {
-    title: `Company ${params.id}`,
+    title: `Company ${resolvedParams.id}`,
   };
 }
 
-export default async function Page({ params }: Props) {
-  const { id } = params;
+export default async function Page({ params, searchParams }: Props) { // Added searchParams to destructuring
+  const resolvedParams = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined; // Added await for searchParams
+  const { id } = resolvedParams;
   
   try {
     // Server-side data fetching
