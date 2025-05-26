@@ -3,62 +3,58 @@ import { Company } from '@/types';
 import CompanyDetailClient from './client-page';
 
 type Props = {
-  params: Promise<{ id: string }>;
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+  params: { id: string };
+  searchParams?: Record<string, string | string[] | undefined>;
 };
 
-export async function generateStaticParams() {
-  // For static export, we'll pre-render paths for a set of IDs
-  // You can adjust this range based on your needs
-  return Array.from({ length: 100 }, (_, i) => ({
-    id: (i + 1).toString(),
-  }));
-}
+// Set this page to be dynamically rendered
+export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
-    title: `Company ${resolvedParams.id}`,
+    title: `Company ${params.id}`,
   };
 }
 
-export default async function Page({ params, searchParams }: Props) {
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
-
+export default async function Page({ params }: Props) {
+  const { id } = params;
+  
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/companies/${resolvedParams.id}`, {
-      next: { revalidate: 60 },
+    // Server-side data fetching
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8088'}/api/companies/${id}`, {
       headers: {
         'Content-Type': 'application/json',
       },
+      // This ensures the data is fresh
+      cache: 'no-store'
     });
 
     if (!res.ok) throw new Error('Failed to fetch company');
     const company: Company = await res.json();
+    
+    // Pass the fetched data to the client component
     return <CompanyDetailClient initialData={company} />;
   } catch (error) {
-    // During static build, return a placeholder
-    if (process.env.NODE_ENV === 'production') {
-      const placeholderCompany: Company = {
-        id: resolvedParams.id,
-        name: 'Loading...',
-        batch: 'Loading...',
-        status: 'new',
-        description: 'Company data will load client-side',
-        website: '',
-        sectors: [],
-        oneLiner: 'Loading...',
-        foundingDate: '',
-        founders: [],
-        productStatus: 'pre-launch',
-        businessModel: 'Loading...',
-        developmentStage: 'idea',
-        metWith: false
-      };
-      return <CompanyDetailClient initialData={placeholderCompany} />;
-    }
-    throw error;
+    console.error('Error fetching company:', error);
+    
+    // Fallback data in case of error
+    const fallbackCompany: Company = {
+      id: id,
+      name: 'Error Loading Data',
+      batch: 'Unknown',
+      status: 'new',
+      description: 'There was an error loading the company data. Please try again later.',
+      website: '',
+      sectors: [],
+      oneLiner: 'Error loading data',
+      foundingDate: '',
+      founders: [],
+      productStatus: 'pre-launch',
+      businessModel: 'Unknown',
+      developmentStage: 'idea',
+      metWith: false
+    };
+    
+    return <CompanyDetailClient initialData={fallbackCompany} />;
   }
 }

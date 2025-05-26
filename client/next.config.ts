@@ -4,8 +4,8 @@ import type { NextConfig } from "next";
 const isRailway = process.env.RAILWAY_STATIC_URL || process.env.RAILWAY_SERVICE_NAME;
 
 const nextConfig: NextConfig = {
-  // Keep static export for production builds
-  output: 'export',
+  // Remove static export to enable server-side rendering and dynamic routes
+  // output: 'export',
   
   // Configure images
   images: {
@@ -15,7 +15,8 @@ const nextConfig: NextConfig = {
       "images.sprig.com",
       "www.ycombinator.com",
     ],
-    unoptimized: true,
+    // Remove unoptimized since we're not using static export
+    // unoptimized: true,
   },
   
   // Keep trailing slash for consistency
@@ -25,12 +26,6 @@ const nextConfig: NextConfig = {
   // This is important for Railway deployment
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8088',
-  },
-  
-  // This ensures that the NEXT_PUBLIC_API_URL is properly set at build time
-  // which is critical for static exports
-  publicRuntimeConfig: {
-    apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8088',
   },
 };
 
