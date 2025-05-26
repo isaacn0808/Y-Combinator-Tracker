@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 8088;
 
 app.use(express.json());
 app.use(cors());
-
+console.log(process.env);
 
 app.get('/', (req: Request, res: Response) => {
   res.status(200).json({ status: 'healthy' });
